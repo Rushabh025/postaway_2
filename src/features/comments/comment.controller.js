@@ -1,36 +1,33 @@
-import CommentModel from "./comment.model.js";
+import CommentRepository from "./comment.model.js";
 import ApplicationError from "../../common/errors/ApplicationError.js";
 
-class CommentController{
-
-    // Create a new comment
-    newComment(req, res, next){
+class CommentController {
+    async newComment(req, res, next) {
         try {
             const { userId, content } = req.body;
-            const postId = parseInt(req.params.id, 10);
+            const postId = req.params.postId; // MongoDB ObjectId
 
             if (!userId || !postId || !content) {
                 return res.status(400).json({ success: false, message: "All fields are required" });
             }
 
-            const newComment = CommentModel.createComment({ userId, postId, content });
+            const newComment = await CommentRepository.createComment({ userId, postId, content });
 
             res.status(201).json({ success: true, data: newComment });
         } catch (error) {
             next(new ApplicationError("Failed to add a new comment", 500));
-        }  
+        }
     }
 
-    // Get all comments for a post
-    getCommentsByPost(req, res, next){
+    async getCommentsByPost(req, res, next) {
         try {
-            const postId = parseInt(req.params.id, 10);
+            const postId = req.params.postId;
 
             if (!postId) {
                 return res.status(400).json({ success: false, message: "Post ID is required" });
             }
 
-            const postComments = CommentModel.getPostComments(postId);
+            const postComments = await CommentRepository.getPostComments(postId);
 
             res.status(200).json({ success: true, data: postComments });
         } catch (error) {
@@ -38,16 +35,16 @@ class CommentController{
         }
     }
 
-    // Update a comment
-    updateComment(req, res, next){
+    async updateComment(req, res, next) {
         try {
-            const { id, content } = req.body;
+            const commentId = req.params.commentId;
+            const { content } = req.body;
 
-            if (!id || !content) {
+            if (!commentId || !content) {
                 return res.status(400).json({ success: false, message: "Comment ID and Content are required" });
             }
 
-            const updatedComment = CommentModel.updateComment({ id, content });
+            const updatedComment = await CommentRepository.updateComment(commentId, content);
 
             if (!updatedComment) {
                 return res.status(404).json({ success: false, message: "Comment not found" });
@@ -59,16 +56,15 @@ class CommentController{
         }
     }
 
-    // Delete a comment
-    deleteComment(req, res, next){
+    async deleteComment(req, res, next) {
         try {
-            const id = parseInt(req.params.id, 10);
+            const commentId = req.params.commentId;
 
-            if (!id) {
+            if (!commentId) {
                 return res.status(400).json({ success: false, message: "Comment ID is required" });
             }
 
-            const isDeleted = CommentModel.deleteComment(id);
+            const isDeleted = await CommentRepository.deleteComment(commentId);
 
             if (!isDeleted) {
                 return res.status(404).json({ success: false, message: "Comment not found" });

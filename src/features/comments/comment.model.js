@@ -1,53 +1,55 @@
-export default class CommentModel{
+import mongoose from "mongoose";
 
-    constructor(id, userId, postId, content){
-        this.id = id;
-        this.userId = userId;
-        this.postId = postId;
-        this.content = content;
-    }
+const commentSchema = new mongoose.Schema({
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        ref: "User" 
+    },
+    postId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        ref: "Post" 
+    },
+    content: { 
+        type: String, 
+        required: true 
+    },
+}, { timestamps: true });
 
-    static createComment(commentData){
-        let newComment = new CommentModel(
-            comments.length + 1,
-            commentData.userId,
-            commentData.postId,
-            commentData.content
-        );
+const CommentModel = mongoose.model("Comment", commentSchema);
 
-        comments.push(newComment);
-        return newComment;
-    }
-
-    // Get all comments for a post
-    static getPostComments(postId) {
-        return comments.filter(comment => comment.postId === postId);
-    }
-
-    static updateComment(updateData){
-        const comment = comments.find(comment => comment.id === updateData.id);
-        if (!comment) {
-            return null; // Comment not found
+export default class CommentRepository {
+    static async createComment(commentData) {
+        try {
+            const newComment = new CommentModel(commentData);
+            return await newComment.save();
+        } catch (error) {
+            throw new Error("Error creating comment: " + error.message);
         }
-
-        comment.content = updateData.content || comment.content;
-        return comment;
     }
 
-    static deleteComment(id){
-        const commentIndex = comments.findIndex(comment => comment.id === id);
-        if(commentIndex === -1){
-            return false;
+    static async getPostComments(postId) {
+        try {
+            return await CommentModel.find({ postId }).populate("userId", "name"); // Populate user details
+        } catch (error) {
+            throw new Error("Error fetching comments: " + error.message);
         }
-
-        comments.splice(commentIndex, 1);
-        return true; // Successfully deleted
     }
 
+    static async updateComment(commentId, content) {
+        try {
+            return await CommentModel.findByIdAndUpdate(commentId, { content }, { new: true });
+        } catch (error) {
+            throw new Error("Error updating comment: " + error.message);
+        }
+    }
+
+    static async deleteComment(commentId) {
+        try {
+            return await CommentModel.findByIdAndDelete(commentId);
+        } catch (error) {
+            throw new Error("Error deleting comment: " + error.message);
+        }
+    }
 }
-
-let comments = [
-    new CommentModel(1, 1, 1, "First comment"),
-    new CommentModel(2, 2, 1, "Second comment"),
-    new CommentModel(3, 1, 2, "Comment on post 2"),
-];

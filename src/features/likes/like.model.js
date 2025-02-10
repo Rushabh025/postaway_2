@@ -1,35 +1,43 @@
-export default class LikeModel{
+import mongoose from "mongoose";
 
-    constructor(id, userId, postId){
-        this.id = id;
-        this.userId = userId;
-        this.postId = postId;
-    }
+const likeSchema = new mongoose.Schema({
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        ref: "User" 
+    },
+    postId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        ref: "Post" 
+    },
+}, { timestamps: true });
 
-    // Get all likes for a post
-    static getLikes(postId) {
-        return likes.filter(like => like.postId === postId);
-    }
+const LikeModel = mongoose.model("Like", likeSchema);
 
-    static toggleLike(userId, postId){
-        const existingLikeIndex = likes.findIndex(like => like.userId === userId && like.postId === postId);
-        
-        if (existingLikeIndex !== -1) {
-            // Remove the like if it exists
-            const removedLike = likes.splice(existingLikeIndex, 1)[0];
-            return { added: false, like: removedLike };
-        } else {
-            // Add a new like
-            const newLike = new LikeModel(likes.length + 1, userId, postId);
-            likes.push(newLike);
-            return { added: true, like: newLike };
+export default class LikeRepository {
+    static async getLikes(postId) {
+        try {
+            return await LikeModel.find({ postId }).populate("userId", "name"); // Populate user details
+        } catch (error) {
+            throw new Error("Error fetching likes: " + error.message);
         }
     }
 
-}
+    static async toggleLike(userId, postId) {
+        try {
+            const existingLike = await LikeModel.findOne({ userId, postId });
 
-let likes = [
-    new LikeModel(1, 1, 1),
-    new LikeModel(2, 2, 1),
-    new LikeModel(3, 3, 2),
-  ];
+            if (existingLike) {
+                await LikeModel.deleteOne({ _id: existingLike._id });
+                return { added: false, like: existingLike };
+            } else {
+                const newLike = new LikeModel({ userId, postId });
+                await newLike.save();
+                return { added: true, like: newLike };
+            }
+        } catch (error) {
+            throw new Error("Error toggling like: " + error.message);
+        }
+    }
+}

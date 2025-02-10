@@ -8,6 +8,7 @@ import userRoutes from "./features/users/user.routes.js";
 import postRoutes from "./features/posts/post.routes.js";
 import commentRoutes from "./features/comments/comment.routes.js";
 import likeRoutes from "./features/likes/like.routes.js";
+import friendshipRoutes from "./features/friendship/friendship.routes.js";
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', checkAuth, fileUploadMiddleware, postRoutes);
 app.use('/api/comments', checkAuth, commentRoutes);
 app.use('/api/likes', checkAuth, likeRoutes);
+app.use('/api/friends', checkAuth, friendshipRoutes);
 
 export default app;

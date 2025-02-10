@@ -4,9 +4,9 @@ import CommentController from "./comment.controller.js";
 const commentRoutes = express.Router();
 const commentController = new CommentController();
 
-commentRoutes.get('/:id', commentController.getCommentsByPost);
-commentRoutes.post('/:id', commentController.newComment);
-commentRoutes.delete('/:id', commentController.deleteComment);
-commentRoutes.put('/:id', commentController.updateComment);
+commentRoutes.get('/:postId', commentController.getCommentsByPost);
+commentRoutes.post('/:postId', commentController.newComment);
+commentRoutes.delete('/:commentId', commentController.deleteComment);
+commentRoutes.put('/:commentId', commentController.updateComment);
 
 export default commentRoutes;
