@@ -1,41 +1,68 @@
-export default class UserModel{
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
-    constructor(id, name, email, password){
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
+// Define the User Schema
+const userSchema = new mongoose.Schema({
+    name : {
+        type: String,
+        required : true
+    },
+    email : {
+        type : String,
+        required : true,
+        unique: true
+    },
+    password : {
+        type : String,
+        required: true
+    }
+}, { timestamps: true });
+
+// hash password before saving
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next(); // Only hash if password is modified
+
+    this.password = await bcrypt.hash(this.password, 10);
+    next(); 
+});
+
+// Static method to find a user by email
+userSchema.statics.getUserByEmail = async function (email) {
+    return this.findOne({email});
+};
+
+// Static method to create a new user
+userSchema.statics.addUser = async function (userDetails) {
+    return this.create(userDetails);
+};
+
+// Static method to invalidate sessions (for logoutAllDevices)
+userSchema.statics.invalidateUserSessions = async function (userId) {
+    // If using a session store like MongoDB, update here
+    return true;
+};
+
+// Find a user by ID
+userSchema.statics.getOneUser = async function (userId) {
+    return this.findById(userId).select("-password"); // Exclude password from the response
+};
+
+// Get all users
+userSchema.statics.getAllUsers = async function () {
+    return this.find().select("-password"); // Exclude passwords
+};
+
+// Update user details
+userSchema.statics.updateUser = async function (userId, updateData) {
+    if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10); // Hash new password if changed
     }
 
-    static addUser(userDetails){
-        if (this.getUser(userDetails.email)) {
-            return null; // Email already exists
-        }
+    return this.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select("-password");
+};
 
-        let newUser = new UserModel(
-            users.length + 1,
-            userDetails.name,
-            userDetails.email,
-            userDetails.password
-        );
+// Create the Mongoose Model
+const UserModel = mongoose.model("User", userSchema);
 
-        users.push(newUser);
-        return newUser;
-    }
-
-    static getAllUsers(){
-        return users;
-    }
-
-    static getUser(email){
-        return users.find((user) => user.email === email);
-    }
-
-
-}
-
-
-let users = [
-    new UserModel(1, "rushabh", "rushabh@gmail.com", 12345)
-];
+export default UserModel;
 

@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
 import session from "express-session";
 import { checkAuth } from "./middleware/auth.middleware.js";
@@ -11,6 +10,8 @@ import commentRoutes from "./features/comments/comment.routes.js";
 import likeRoutes from "./features/likes/like.routes.js";
 
 const app = express();
+
+dotenv.config();
 
 app.use(express.json());
 app.use(session({
