@@ -1,64 +1,78 @@
-export default class PostModel{
-    constructor(id, userId, caption, imageUrl){
-        this.id = id;
-        this.userId = userId;
-        this.caption = caption;
-        this.imageUrl = imageUrl;
-    }
+import mongoose from "mongoose";
 
-    static addPost(postData){
-        let newPost = new PostModel(
-            posts.length + 1,
-            postData.userId,
-            postData.caption,
-            postData.imageUrl
-        );
+const postSchema = new mongoose.Schema({
+    userId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        required: true, 
+        ref: "User" 
+    },
+    caption: { 
+        type: String, 
+        required: true 
+    },
+    imageUrl: { 
+        type: String, 
+        required: false 
+    },
+}, { timestamps: true });
 
-        posts.push(newPost);
-        return newPost;
-    }
+const PostModel = mongoose.model("Post", postSchema);
 
-    static getAllPosts(){
-        return posts;
-    }
-
-    static getUserPosts(userId){
-        return posts.find(post => post.userId === userId);
-    }
-
-    static getPostById(id){
-        return posts.find(post => post.id === id);
-    }
-
-    static updatePost(updateData){
-        var post = posts.find(post => post.id === updateData.id);
-        if(!post){
-            return null;
+export default class PostRepository {
+    static async addPost(postData) {
+        try {
+            const newPost = new PostModel(postData);
+            return await newPost.save();
+        } catch (error) {
+            throw new Error("Error creating post: " + error.message);
         }
-
-        const {caption, imageUrl} = updateData;
-        post.caption = caption || post.caption;
-        post.imageUrl = imageUrl || post.imageUrl;
-
-        return post;
     }
 
-    static deletePost(id){
-        var postIndex = posts.findIndex(post => post.id === id);
-        if(postIndex === -1){
-            return false;
+    static async getAllPosts() {
+        try {
+            return await PostModel.find();
+        } catch (error) {
+            throw new Error("Error fetching posts: " + error.message);
         }
-
-        posts.splice(postIndex, 1);
-        return true;
     }
 
-    static filterByCaption(caption) {
-        return posts.filter(post => post.caption.toLowerCase().includes(caption.toLowerCase()));
+    static async getUserPosts(userId) {
+        try {
+            return await PostModel.find({ userId });
+        } catch (error) {
+            throw new Error("Error fetching user posts: " + error.message);
+        }
+    }
+
+    static async getPostById(id) {
+        try {
+            return await PostModel.findById(id);
+        } catch (error) {
+            throw new Error("Error fetching post: " + error.message);
+        }
+    }
+
+    static async updatePost(id, updateData) {
+        try {
+            return await PostModel.findByIdAndUpdate(id, updateData, { new: true });
+        } catch (error) {
+            throw new Error("Error updating post: " + error.message);
+        }
+    }
+
+    static async deletePost(id) {
+        try {
+            return await PostModel.findByIdAndDelete(id);
+        } catch (error) {
+            throw new Error("Error deleting post: " + error.message);
+        }
+    }
+
+    static async filterByCaption(caption) {
+        try {
+            return await PostModel.find({ caption: { $regex: caption, $options: "i" } });
+        } catch (error) {
+            throw new Error("Error filtering posts: " + error.message);
+        }
     }
 }
-
-let posts = [
-    new PostModel(1, 1, "First Post", "/img.jpg"),
-    new PostModel(2, 2, "Second Post", "/img2.jpg"),
-];
