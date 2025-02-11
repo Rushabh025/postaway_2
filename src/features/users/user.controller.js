@@ -19,6 +19,7 @@ class UserController{
             res.status(201).json(newUser);
 
         } catch (error) {
+            console.error("Error during registration:", error);
             next(new ApplicationError("Registration Failed", 500));
         }
     }

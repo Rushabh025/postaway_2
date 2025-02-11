@@ -7,7 +7,7 @@ import { sendEmail } from '../../utils/emailServices.utils.js';
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // Send OTP
-exports.sendOTP = async (req, res) => {
+export const sendOTP = async (req, res) => {
     const { email } = req.body;
     const user = await UserModel.findOne({ email });
 
@@ -24,7 +24,7 @@ exports.sendOTP = async (req, res) => {
 };
 
 // Verify OTP
-exports.verifyOTP = async (req, res) => {
+export const verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
     const otpRecord = await OTP.findOne({ email });
 
@@ -41,7 +41,7 @@ exports.verifyOTP = async (req, res) => {
 };
 
 // Reset Password
-exports.resetPassword = async (req, res) => {
+export const resetPassword = async (req, res) => {
     const { email, newPassword } = req.body;
     const user = await UserModel.findOne({ email });
 
