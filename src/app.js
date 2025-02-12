@@ -18,6 +18,7 @@ dotenv.config();
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.static("public")); // Serve static files (for uploaded images)
 app.use(session({
     secret: "12345",
     resave: false,

@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 
 const friendshipSchema = new mongoose.Schema(
     {
+        // User who sent the request
         requester: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: "User", 
             required: true 
         },
+        // User who received the request
         recipient: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: "User", 
@@ -77,25 +79,26 @@ export default class friendshipRepository {
         }
     }
 
-    static async responseToFriendRequest(friendshipId, status) {
+    static async responseToFriendRequest(friendId, status) {
         try {
             if (!["Accepted", "Rejected"].includes(status)) {
-                throw new Error("Invalid status");
+                throw new Error("Invalid status", 400);
             }
-
-            const friendship = await friendshipModel.findByIdAndUpdate(
-                friendshipId,
-                { status },
-                { new: true }
+    
+            // Find the friendship request by friendId and update the status
+            const friendship = await friendshipModel.findOneAndUpdate(
+                { _id: friendId },  // Find by friendId
+                { status },         // Update the status field
+                { new: true }       // Return the updated document
             );
-
+    
             if (!friendship) {
-                throw new Error("Friendship request not found");
+                throw new Error("Friendship request not found", 404);
             }
-
+    
             return friendship;
         } catch (error) {
-            throw new Error("Error responding to friend request: " + error.message);
+            throw new Error("Error responding to friend request: " + error.message, 500);
         }
-    }
+    }    
 }

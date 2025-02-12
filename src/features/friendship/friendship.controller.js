@@ -15,7 +15,7 @@ class FriendshipController {
 
     async getPendingRequests(req, res, next) {
         try {
-            const { userId } = req.params;
+            const userId = req.session.userId;
             const pendingRequests = await friendshipRepository.getPendingFriendRequests(userId);
             res.status(200).json({ success: true, data: pendingRequests });
         } catch (error) {
@@ -25,7 +25,10 @@ class FriendshipController {
 
     async toggleFriendship(req, res, next) {
         try {
-            const { requesterId, recipientId } = req.body;
+            const requesterId = req.params.friendId;
+            const recipientId = req.session.userId;
+            console.log(requesterId);
+            console.log(recipientId);
             if (!requesterId || !recipientId) {
                 return next(new ApplicationError("Requester ID and Recipient ID are required", 400));
             }
@@ -39,17 +42,27 @@ class FriendshipController {
 
     async responseToRequest(req, res, next) {
         try {
-            const { friendshipId, status } = req.body;
-            if (!friendshipId || !["Accepted", "Rejected"].includes(status)) {
+            const { friendId } = req.params; // Extract friendId from URL
+            const { status } = req.body; // Extract status from request body
+    
+            // Validate inputs
+            if (!friendId || !["Accepted", "Rejected"].includes(status)) {
                 return next(new ApplicationError("Invalid request parameters", 400));
             }
-
-            const updatedFriendship = await friendshipRepository.responseToFriendRequest(friendshipId, status);
+    
+            // Call the repository method to update the friendship status
+            const updatedFriendship = await friendshipRepository.responseToFriendRequest(friendId, status);
+    
+            if (!updatedFriendship) {
+                return next(new ApplicationError("Friendship request not found", 404));
+            }
+    
             res.status(200).json({ success: true, data: updatedFriendship });
         } catch (error) {
             next(new ApplicationError(error.message || "Failed to respond to request", 500));
         }
     }
+    
 }
 
 export default FriendshipController;

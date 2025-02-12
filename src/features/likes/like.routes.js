@@ -5,6 +5,6 @@ const likeRoutes = express.Router();
 const likeController = new LikeController();
 
 likeRoutes.get('/:id', likeController.getLikes);
-likeRoutes.get('/toggle/:id', likeController.toggleLikes);
+likeRoutes.post('/toggle/:id', likeController.toggleLikes);
 
 export default likeRoutes;

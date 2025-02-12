@@ -5,11 +5,15 @@ class PostController {
     // Create a new post
     async createPost(req, res, next) {
         try {
-            const postData = req.body;
-            const uploadedFile = req.file;
+            // console.log("Received body:", req.body.caption);  // Debug request body
+            // console.log("Received file:", req.file);  // Debug file upload
 
-            if (uploadedFile) {
-                postData.imageUrl = '/uploads/' + uploadedFile.filename;
+            const caption = req.body.caption;
+            const userId = req.session.userId;
+
+            const postData = { userId, caption };
+            if (req.file) {
+                postData.imageUrl = `/uploads/${req.file.filename}`;
             }
 
             const newPost = await PostRepository.addPost(postData);

@@ -4,14 +4,16 @@ import ApplicationError from "../../common/errors/ApplicationError.js";
 class CommentController {
     async newComment(req, res, next) {
         try {
-            const { userId, content } = req.body;
+            const userId = req.session.userId;
             const postId = req.params.postId; // MongoDB ObjectId
+            const content = req.body.content;
 
             if (!userId || !postId || !content) {
                 return res.status(400).json({ success: false, message: "All fields are required" });
             }
 
-            const newComment = await CommentRepository.createComment({ userId, postId, content });
+            const commentData = {userId, postId, content};
+            const newComment = await CommentRepository.createComment(commentData);
 
             res.status(201).json({ success: true, data: newComment });
         } catch (error) {

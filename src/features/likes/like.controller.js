@@ -19,12 +19,12 @@ class LikeController {
 
     async toggleLikes(req, res, next) {
         try {
-            const userId = req.session.id;
+            const userId = req.session.userId;
             if (!userId) {
                 return res.status(401).json({ success: false, message: "Unauthorized: Please log in." });
             }
 
-            const postId = req.params.postId;
+            const postId = req.params.id;
             if (!postId) {
                 return res.status(400).json({ success: false, message: "Post ID required" });
             }

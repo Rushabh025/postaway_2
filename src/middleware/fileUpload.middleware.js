@@ -1,18 +1,15 @@
-import multer from 'multer';
+import multer from "multer";
+import path from "path";
 
-// Configure where to store the uploaded files (in your 'public/uploads' directory)
+// Fix: Ensure files are saved outside `src/`
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads'); // Specify the directory to store the files
+        cb(null, path.resolve("../public/uploads")); // Absolute path to `../public/uploads`
     },
     filename: function (req, file, cb) {
-        const filename = Date.now() + '-' + file.originalname; // Use current timestamp for unique filename
-        cb(null, filename); // Specify the filename for the uploaded file
+        const filename = Date.now() + "-" + file.originalname;
+        cb(null, filename);
     }
 });
 
-// Create the multer upload middleware
-const upload = multer({ storage });
-
-// Export the upload middleware to be used in routes
-export const fileUploadMiddleware = upload.single('file'); // 'file' is the field name for the file input in the form
+export const fileUploadMiddleware = multer({ storage }).single("imageUrl"); // Field name must match form-data key in Postman
