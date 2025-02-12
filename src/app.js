@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
+import cookieParser from "cookie-parser";
 import session from "express-session";
-import { checkAuth } from "./middleware/auth.middleware.js";
+import checkAuth from "./middleware/auth.middleware.js";
 import { loggerMiddleware } from './middleware/logger.middleware.js';
 import { fileUploadMiddleware } from './middleware/fileUpload.middleware.js';
 import userRoutes from "./features/users/user.routes.js";
@@ -15,6 +16,7 @@ const app = express();
 
 dotenv.config();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(session({
     secret: "12345",

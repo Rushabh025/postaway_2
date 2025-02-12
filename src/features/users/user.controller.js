@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import UserModel from "./user.model.js";
 import ApplicationError from "../../common/errors/ApplicationError.js";
+import { generateToken } from "../../utils/token.utils.js";
 
 class UserController{
 
@@ -39,6 +40,17 @@ class UserController{
             if (!isPasswordCorrect) {
                 return res.status(401).json({ message: "Wrong email or password" });
             }
+
+            // Generate new JWT token
+            const token = generateToken(user);
+
+            // Set token in a secure HTTP-only cookie
+            res.cookie("jwtToken", token, { 
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === "production",  // Only secure in production
+                sameSite: "Strict",
+                expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Expires in 7 days
+            });
 
             // Store the user ID in the session
             req.session.userId = user._id;
@@ -108,7 +120,7 @@ class UserController{
     // Update user details
     async updateUserDetails(req, res, next) {
         try {
-            const userId = req.params.id;
+            const userId = req.params.userId;
             const updateData = req.body;
     
             const updatedUser = await UserModel.updateUser(userId, updateData);

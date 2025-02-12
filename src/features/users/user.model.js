@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
     password : {
         type : String,
         required: true
+    },
+    tokenVersion: { 
+        type: Number, 
+        default: 0 
     }
 }, { timestamps: true });
 
@@ -39,7 +43,13 @@ userSchema.statics.addUser = async function (userDetails) {
 // Static method to invalidate sessions (for logoutAllDevices)
 userSchema.statics.invalidateUserSessions = async function (userId) {
     // If using a session store like MongoDB, update here
-    return true;
+    try {
+        await this.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
+        return true;
+    } catch (error) {
+        console.error("Error invalidating user sessions:", error);
+        return false;
+    }
 };
 
 // Find a user by ID
